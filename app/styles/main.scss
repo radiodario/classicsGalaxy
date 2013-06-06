@@ -1,0 +1,19 @@
+//@import url(http://fonts.googleapis.com/css?family=Balthazar);
+@import "compass/css3/text-shadow";
+
+body {
+    background: #100515;
+    font-family: 'Balthazar', serif;
+    color: white;
+
+}
+
+header {
+  font-size: 4em;
+  @include text-shadow(0, 0, 4px, 3px, white);
+}
+
+main {
+  height: 100%;
+
+}
