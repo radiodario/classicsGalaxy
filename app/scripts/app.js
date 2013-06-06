@@ -1,5 +1,5 @@
 /*global define */
-define(['three'], function (three) {
+define(['three', 'tween'], function (three) {
     'use strict';
 
     
@@ -7,10 +7,13 @@ define(['three'], function (three) {
     var rect = container.getBoundingClientRect();
     var w = rect.width;
     var h = rect.height;
+    var side = w/2;
     var mouseX = 0;
     var mouseY = 0;
     var theta = 0;
-    var radius = 500;
+    var radius = h;
+
+    var moveto = null;
 
     var scene = new THREE.Scene();
     var projector = new THREE.Projector();
@@ -28,6 +31,7 @@ define(['three'], function (three) {
 
     var selectedBook = {
       r : mapToCoordinates(20, 0, 1, 0, 20),
+      radious : 20,
       x : mapToCoordinates(0, -1, 1, -side, side),
       y : mapToCoordinates(0, -1, 1, -side, side),
       z : 0,
@@ -35,27 +39,26 @@ define(['three'], function (three) {
     };
 
 
-    var url = 'http://ec2-54-216-139-182.eu-west-1.compute.amazonaws.com/geo/';
-
-    var side = w/2;
+    var host = 'http://ec2-54-216-139-182.eu-west-1.compute.amazonaws.com/';
 
     var stars = [];
     var lines = [];
+    var tweens = [];
 
     function makeStar(starInfo) {
 
-      var geometry = new THREE.CubeGeometry( starInfo.r, starInfo.r, starInfo.r );
 
       var op = (Math.exp(starInfo.radious))
-      
+      var r = starInfo.r
+      var geometry = new THREE.CubeGeometry(r -op, r -op, r -op );
 
       var object = new THREE.Mesh(
         geometry, 
         new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: op } ) 
       );
-      object.position.x = starInfo.x;
-      object.position.y = starInfo.y;
-      object.position.z = starInfo.z;
+      object.position.x = 0;
+      object.position.y = 0;
+      object.position.z = 0;
 
       object.scale.x = 1;
       object.scale.y = 1;
@@ -68,14 +71,44 @@ define(['three'], function (three) {
       scene.add( object );
       object.info = starInfo;
 
+      var position = {
+        x: 0, 
+        y: 0, 
+        z: 0
+      };
+
+      var target = {
+        x: starInfo.x, 
+        y: starInfo.y, 
+        z: starInfo.z
+      }
+
+
       stars.push( object );
 
       var geometry = new THREE.Geometry();
       geometry.vertices.push(new THREE.Vector3(0, 0, 0));
-      geometry.vertices.push(new THREE.Vector3(starInfo.x, starInfo.y, starInfo.z));
-      
+      geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+    
+
       var linemat = new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 0.1 })
       var line = new THREE.Line(geometry, linemat);
+
+      var tween = new TWEEN.Tween(position)
+            .to( target, 2000 )
+            .easing(TWEEN.Easing.Quartic.Out)
+            .onUpdate( function () {
+              
+              object.position.x = position.x;
+              object.position.y = position.y;
+              object.position.z = position.z;
+
+              line.geometry.vertices[1] = new THREE.Vector3(position.x, position.y, position.z)
+
+              
+            } )
+            .start();
+
       scene.add(line)
       lines.push(line);
     }
@@ -84,11 +117,39 @@ define(['three'], function (three) {
     makeStar(selectedBook);
 
     getBooks(selectedBook.id)
+    getRelated(selectedBook.id)
+
+    function getRelated(id) {
+      $.getJSON(host+'id/'+id, function(data) {
+            $('#sidebar h2.title').text(data.title);
+            $('#sidebar .author').text(data.author);
+          });
+
+          $.getJSON(host+'top/'+id, function(books) {
+
+            var html = '<ul>'
+
+            books.forEach(function(book, i) {
+
+              html += '<li>';
+              html += '<div class="bookTitle">' + (i+1) + ': ' + book[1] + '</div>';
+              html += '<div class="bookAuthor">' + book[2] + '</div>';
+              html += '</li>';
+
+            })
+
+            html +='</ul>'
+
+            $('#topten').html(html);
+
+          });
+
+    }
 
     function getBooks(id) {
 
       // $.getJSON('data/books.json', function(data) {
-      $.getJSON(url + id, function(data) {
+      $.getJSON(host + 'geo/' + id, function(data) {
 
         for (var key in data) {
           var starInfo = data[key];
@@ -103,6 +164,9 @@ define(['three'], function (three) {
         render();
 
       });
+
+
+
     }
     
     
@@ -118,10 +182,47 @@ define(['three'], function (three) {
       return Math.random() * (max - min) + min;
     }
 
+    function onWindowResize() {
+
+        rect = container.getBoundingClientRect();
+        w = rect.width;
+        h = rect.height;
+        side = w/2;
+        camera.aspect = rect.width / rect.height;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize( rect.width, rect.height );
+
+
+      }
+
+    function onDocumentMouseMove(event) {
+        event.preventDefault();
+
+        var vector = new THREE.Vector3( ( event.offsetX / rect.width ) * 2 - 1, - ( event.offsetY / rect.height ) * 2 + 1, 0.5 );
+        projector.unprojectVector( vector, camera );
+
+        var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+        var intersects = raycaster.intersectObjects( stars );
+        // console.log(intersects)
+        if ( intersects.length > 0 ) {
+          var selectedStar = intersects[0].object;
+
+          stars.map(function(star, i) {
+            star.material.color.setHex( 0xffffff);
+          })
+          selectedStar.selected = true;
+          selectedStar.material.color.setHex( 0x000fff)
+        }
+
+    }
+
+
     function onDocumentMouseDown( event ) {
 
         event.preventDefault();
-        console.log(rect, event.clientX, event)
+        
         var vector = new THREE.Vector3( ( event.offsetX / rect.width ) * 2 - 1, - ( event.offsetY / rect.height ) * 2 + 1, 0.5 );
         projector.unprojectVector( vector, camera );
 
@@ -129,49 +230,45 @@ define(['three'], function (three) {
 
         var intersects = raycaster.intersectObjects( stars );
 
-        console.log('intersects:', intersects)
-
         if ( intersects.length > 0 ) {
-          var selectedStar = intersects[0].object;
-
-
-          if (selectedStar.selected) {
-            stars.map(function(star, i) {
-              if (star === selectedStar) {
-                star.position.x = 0;
-                star.position.y = 0;
-                star.position.z = 0;
-              } else {
-                scene.remove(star)
-                delete stars[i]
+          var selectedStar = intersects[0].object;         
+          stars.map(function(star, i) {
+            if (star === selectedStar) {
+              var pos = {
+                x: star.position.x,
+                y: star.position.y,
+                z: star.position.z
               }
+
+              var tween = new TWEEN.Tween(pos)
+                .to({x:0, y:0, z:0}, 500)
+                .onUpdate(function() {
+                  star.position.x = pos.x;
+                  star.position.y = pos.y;
+                  star.position.z = pos.z;
+                })
+                .easing(TWEEN.Easing.Quartic.Out)
+                .onComplete(function() {
+                getBooks(selectedBook.id);
+                }).start()
+              
+            } else {
+              scene.remove(star)
+              delete stars[i]
+            }
+          });
+          lines.map(function(line) {
+            scene.remove(line)
             });
-            lines.map(function(line) {
-              scene.remove(line)
-              });
-            getBooks(selectedBook.id)
-          } else {
-            stars.map(function(star, i) {
-              star.material.color.setHex( 0xffffff);
-            })
-            selectedStar.selected = true;
-            selectedStar.material.color.setHex( 0x0000ff );
-          }
-
-
           selectedBook = selectedStar.info;
           selectedBook.position = selectedStar.position;
-
-          
-
-          // var particle = new THREE.Particle( particleMaterial );
-          // particle.position = intersects[ 0 ].point;
-          // particle.scale.x = particle.scale.y = 8;
-          // scene.add( particle );
-
+          getRelated(selectedBook.id);
         }
+        
 
       }
+
+
 
 
     function animate() {
@@ -182,26 +279,43 @@ define(['three'], function (three) {
 
       }
 
+    function moveto() {
+
+      var x=0, y=0, z=0;
+      moveto = new THREE.Vector3(object.position.x,object.position.y,object.position.z + 200);
+
+    }
+
     
     function render() {
 
-        theta += 0.1;
+        theta += 0.01;
 
         camera.position.x = radius * Math.sin( THREE.Math.degToRad( theta ) );
-        //camera.position.y = radius * Math.sin( THREE.Math.degToRad( theta ) );
+        // //camera.position.y = radius * Math.sin( THREE.Math.degToRad( theta ) );
         camera.position.z = radius * Math.cos( THREE.Math.degToRad( theta ) );
+
+
+
         // if (selectedBook.hasOwnProperty('position')){
+        //   // camera.translateY(selectedBook.position.y)
+        //   //camera.translateX(selectedBook.position.x)
+
         //   camera.lookAt( selectedBook.position );
-        // } else {
+        //  } else {
           camera.lookAt( scene.position )
-        // }
+         // }
+
+
+
+        TWEEN.update();
 
         renderer.render( scene, camera );
-
       }
 
-    document.addEventListener( 'mousedown', onDocumentMouseDown, false );
-
+    container.addEventListener( 'mousedown', onDocumentMouseDown, false );
+    container.addEventListener( 'mousemove', onDocumentMouseMove, false );
+    window.addEventListener( 'resize', onWindowResize, false);
     animate();
 
 

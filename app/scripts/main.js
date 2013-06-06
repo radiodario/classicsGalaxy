@@ -2,7 +2,8 @@ require.config({
     paths: {
         jquery: '../components/jquery/jquery',
         bootstrap: 'vendor/bootstrap',
-        three: '../components/threejs/build/three'
+        three: '../components/threejs/build/three',
+        tween: '../components/tweenjs/build/tween.min'
     },
     shim: {
         bootstrap: {

@@ -17,7 +17,7 @@
     </head>
     <body>
         <header>
-            <h1>The 'MagHack' Text Galaxy</h1>
+            <h1>Penguin Classics Galaxy</h1>
             <div class="divider"></div>
         </header>
         <main class="container-fluid">
@@ -31,36 +31,16 @@
                 </div>
                 <!-- Sidebar -->
                 <div id="sidebar" class="span3">
-                    <h2>Find a Book</h2>
+                    <h2 class="title">Find a Book</h2>
+                    <p class="author">Magic Text allows you to search for books based on your reading style.</p>
                     <div class="divider"></div>
-                    <p>Magic Text allows you to search for books based on your reading style.</p>
-                    <p>Click on the link below to search for books scientifically matched to you.</p>
-                    <a href="#openModal"><button class="btn btn-success" type="button">Find a Book</button></a>
-                    
-                    <!--pop out box -->
-                    <div id="openModal" class="modalDialog master-modal span6">
-                        <a href="#close" title="Close" class="close">X</a>
-                        <h2>Find a Book</h2>
-                        <p>Type some text to get book recommendations based on your reading style.</p>
-                        <textarea rows="4" class="input-xxlarge"></textarea>
-                        <button class="btn btn-success" type="button">Search</button>
-                    </div>
+                    <!-- <p>Click on the link below to search for books scientifically matched to you.</p>
+                    <a href="#openModal"><button class="btn btn-success" type="button">Find a Book</button></a> -->
                     
                     <div id="book-recommendations">
-                        <h2>Top 10 Similar eBooks</h2>
+                        <h3>Top 10 Similar classics</h3>
                         <div class="divider"></div>
-                        <p>Top 10 eBooks based on your strongest matching book.</p>
-                        <div class="row-fluid ebook">
-                            <div class="span3 ebook-img">
-                                <img src="images/frankenstein.jpg" alt="Frankenstein">
-                            </div>
-                            <div class="span7 ebook-name">
-                                <p><a href="http://www.penguin.co.uk/nf/Book/BookDisplay/0,,9780141967127,00.html?strSrchSql=frankenstein/Frankenstein_Mary_Shelley">Frankenstein</a></p>
-                            </div>
-                            <div class="span2 ebook-buy">
-                                <button class="btn btn-success" type="button">Buy</button>
-                            </div>
-                        </div>
+                        <div id="topten"></div>
                     </div>
                 </div>
             </div>
