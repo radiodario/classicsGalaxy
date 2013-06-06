@@ -1,138 +1,110 @@
 /*global define */
-define(['sheetengine'], function (sheetengine) {
+define(['three'], function (three) {
     'use strict';
 
+    
+    var container = document.getElementById('space-graph');
+    var rect = container.getBoundingClientRect();
+    var w = rect.width;
+    var h = rect.height;
+    var mouseX = 0;
+    var mouseY = 0;
+    var theta = 0;
+    var radius = 500;
 
-    console.log(sheetengine)
+    var scene = new THREE.Scene();
+    var projector = new THREE.Projector();
+    var renderer = new THREE.CanvasRenderer();
+        renderer.setSize(w, h);
+
+    var camera = new THREE.PerspectiveCamera( 75, w / h, 1, 10000 );
+        camera.position.z = 100;
+
+    container.appendChild( renderer.domElement );
+
+    var PI2 = Math.PI * 2;
+
+    var geometry = new THREE.Geometry();
+
+    var selectedBook = {
+      r : mapToCoordinates(20, 0, 1, 0, 20),
+      x : mapToCoordinates(0, -1, 1, -side, side),
+      y : mapToCoordinates(0, -1, 1, -side, side),
+      z : 0,
+      id :'dkDEdg1exwK1yg'
+    };
 
 
-    var w = window.innerWidth;
-    var h = window.innerHeight - $('header').height();
+    var url = 'http://ec2-54-216-139-182.eu-west-1.compute.amazonaws.com/geo/';
 
-    var canvasElement = document.getElementById('galaxy');
-    sheetengine.scene.init(canvasElement, {w:900, h:500});
+    var side = w/2;
 
-    var bookid= 'dtB9Y1S18jaTqf'
+    var stars = [];
+    var lines = [];
 
-    var url = 'http://ec2-54-216-139-182.eu-west-1.compute.amazonaws.com/geo/' + bookid;
+    function makeStar(starInfo) {
 
-    // draw the walls
-    // the back y wall
-    for (var x=-1; x<=1; x++) {
-      var basesheet = new sheetengine.BaseSheet(
-        {x:x*200,y:-300,z:50}, 
-        {alphaD:0,betaD:0,gammaD:0}, 
-        {w:200,h:100}
+      var geometry = new THREE.CubeGeometry( starInfo.r, starInfo.r, starInfo.r );
+
+      var op = (Math.exp(starInfo.radious))
+      
+
+      var object = new THREE.Mesh(
+        geometry, 
+        new THREE.MeshBasicMaterial( { color: 0xffffff, opacity: op } ) 
       );
-      basesheet.color = '#171133';
+      object.position.x = starInfo.x;
+      object.position.y = starInfo.y;
+      object.position.z = starInfo.z;
+
+      object.scale.x = 1;
+      object.scale.y = 1;
+      object.scale.z = 1;
+
+      object.rotation.x = Math.random() * 2 * Math.PI;
+      object.rotation.y = Math.random() * 2 * Math.PI;
+      object.rotation.z = Math.random() * 2 * Math.PI;
+
+      scene.add( object );
+      object.info = starInfo;
+
+      stars.push( object );
+
+      var geometry = new THREE.Geometry();
+      geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+      geometry.vertices.push(new THREE.Vector3(starInfo.x, starInfo.y, starInfo.z));
+      
+      var linemat = new THREE.LineBasicMaterial( { color: 0xffffff, opacity: 0.1 })
+      var line = new THREE.Line(geometry, linemat);
+      scene.add(line)
+      lines.push(line);
     }
 
-    // the front y wall
-    for (var x=-1; x<=1; x++) {
-      var basesheet = new sheetengine.BaseSheet(
-        {x:x*200,y:300,z:-25}, 
-        {alphaD:0,betaD:0,gammaD:0}, 
-        {w:200,h:50}
-      );
-      basesheet.color = '#100515';
-    }
+    
+    makeStar(selectedBook);
 
+    getBooks(selectedBook.id)
 
-    // the front x wall
-    for (var y=-1; y<=1; y++) {
-      var basesheet = new sheetengine.BaseSheet(
-        {x:300,y:y*-200,z:-25}, 
-        {alphaD:0,betaD:0,gammaD:90}, 
-        {w:200,h:50}
-      );
-      basesheet.color = '#100515';
-    }
+    function getBooks(id) {
 
-    // the back x wall
-    for (var y=-1; y<=1; y++) {
-      var basesheet = new sheetengine.BaseSheet(
-        {x:-300,y:y*-200,z:50}, 
-        {alphaD:0,betaD:0,gammaD:90}, 
-        {w:200,h:100}
-      );
-      basesheet.color = '#171133';
-    }
+      // $.getJSON('data/books.json', function(data) {
+      $.getJSON(url + id, function(data) {
 
-
-
-        // draw the floor
-    for (var x=-1; x<=1; x++) {
-        for (var y=-1; y<=1; y++) {
-          console.log('x', x, x*200, 'y', y, y*200)
-          var basesheet = new sheetengine.BaseSheet(
-            {x:x*200,y:y*200,z:0}, 
-            {alphaD:90,betaD:0,gammaD:0}, 
-            {w:200,h:200}
-          );
-          basesheet.color = '#171133';
+        for (var key in data) {
+          var starInfo = data[key];
+          starInfo.r = mapToCoordinates(starInfo.radious, 0, 1, 0, 20);
+          starInfo.x = mapToCoordinates(starInfo.x, -1, 1, -side, side);
+          starInfo.y = mapToCoordinates(starInfo.y, -1, 1, -side, side);
+          starInfo.z = getRandomArbitrary(-side, side);
+          starInfo.id = key;
+          makeStar(starInfo)
         }
-      }
 
-    function makeStar(w, x, y, z, color) {
-      
-      var sheet1 = new sheetengine.Sheet(
-        {x:0,y:0,z:0}, 
-        {alphaD:0,betaD:0,gammaD:0}, 
-        {w:w,h:w}
-        );
+        render();
 
-      var sheet2 = new sheetengine.Sheet(
-        {x:0,y:0,z:0}, 
-        {alphaD:90,betaD:0,gammaD:0}, 
-        {w:w,h:w}
-        );
-
-      // var ctx = sheet1.context;
-      // ctx.fillStyle = '#fff';
-      // ctx.beginPath();
-      // ctx.arc(w/2, w/2, w/4, 0, Math.PI*2, true);
-      // ctx.fill();
-      // ctx.closePath();
-
-      var ctx = sheet2.context;
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(w/2, w/2, w/4, 0, Math.PI*2, true);
-      ctx.fill();
-      ctx.closePath();
-
-
-
-      var star = new sheetengine.SheetObject(
-        {x:x,y:y,z:z}, 
-        {alphaD:0,betaD:0,gammaD:0}, 
-        [sheet1, sheet2], 
-        {w:w,h:w*2,relu:w/2,relv:w/2}
-        );
-      
-      return star;
-
+      });
     }
-
-    var stars = []
-
-    stars.push(makeStar(50, 0, 0, 50, '#Faa'));
-
-
-    // $.getJSON('data/books.json', function(data) {
-    $.getJSON(url, function(data) {
-
-      for (var key in data) {
-        var starInfo = data[key];
-        var r = mapToCoordinates(starInfo.radious, 0, 1, 0, 30)
-        var x = mapToCoordinates(starInfo.x, -1, 1, -300, 300)
-        var y = mapToCoordinates(starInfo.y, -1, 1, -300, 300)
-        var z = getRandomArbitrary(5, 100);
-
-        stars.push(makeStar(r, x, y, z, '#aaF'))
-      }
-
-    });
+    
     
 
     // a function to map from coordinates to others
@@ -146,34 +118,91 @@ define(['sheetengine'], function (sheetengine) {
       return Math.random() * (max - min) + min;
     }
 
+    function onDocumentMouseDown( event ) {
 
-    sheetengine.calc.calculateAllSheets();
-    sheetengine.drawing.drawScene(true);
+        event.preventDefault();
+        console.log(rect, event.clientX, event)
+        var vector = new THREE.Vector3( ( event.offsetX / rect.width ) * 2 - 1, - ( event.offsetY / rect.height ) * 2 + 1, 0.5 );
+        projector.unprojectVector( vector, camera );
+
+        var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+        var intersects = raycaster.intersectObjects( stars );
+
+        console.log('intersects:', intersects)
+
+        if ( intersects.length > 0 ) {
+          var selectedStar = intersects[0].object;
+
+
+          if (selectedStar.selected) {
+            stars.map(function(star, i) {
+              if (star === selectedStar) {
+                star.position.x = 0;
+                star.position.y = 0;
+                star.position.z = 0;
+              } else {
+                scene.remove(star)
+                delete stars[i]
+              }
+            });
+            lines.map(function(line) {
+              scene.remove(line)
+              });
+            getBooks(selectedBook.id)
+          } else {
+            stars.map(function(star, i) {
+              star.material.color.setHex( 0xffffff);
+            })
+            selectedStar.selected = true;
+            selectedStar.material.color.setHex( 0x0000ff );
+          }
+
+
+          selectedBook = selectedStar.info;
+          selectedBook.position = selectedStar.position;
+
+          
+
+          // var particle = new THREE.Particle( particleMaterial );
+          // particle.position = intersects[ 0 ].point;
+          // particle.scale.x = particle.scale.y = 8;
+          // scene.add( particle );
+
+        }
+
+      }
+
+
+    function animate() {
+
+        requestAnimationFrame( animate );
+
+        render();
+
+      }
 
     
-    function draw() {
-      sheetengine.calc.calculateChangedSheets();
-      sheetengine.drawing.drawScene();
-    }
+    function render() {
 
-    function update(star) {
-          star.move({x:0, y:0, z:getRandomArbitrary(-1,1)})
-          //star.rotate({x:0, y:0, z:1}, Math.PI/10)
-        } 
+        theta += 0.1;
 
-    function updateAll() {
-      stars.map(update);
-    }
+        camera.position.x = radius * Math.sin( THREE.Math.degToRad( theta ) );
+        //camera.position.y = radius * Math.sin( THREE.Math.degToRad( theta ) );
+        camera.position.z = radius * Math.cos( THREE.Math.degToRad( theta ) );
+        // if (selectedBook.hasOwnProperty('position')){
+        //   camera.lookAt( selectedBook.position );
+        // } else {
+          camera.lookAt( scene.position )
+        // }
 
-    //draw();
+        renderer.render( scene, camera );
 
-    setInterval(function() {
-      updateAll();
-      draw();
-    }, 1000/24);
+      }
 
-    
+    document.addEventListener( 'mousedown', onDocumentMouseDown, false );
 
+    animate();
 
 
 

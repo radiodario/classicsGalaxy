@@ -2,15 +2,15 @@ require.config({
     paths: {
         jquery: '../components/jquery/jquery',
         bootstrap: 'vendor/bootstrap',
-        sheetengine: 'vendor/sheetengine-1.2.0'
+        three: '../components/threejs/build/three'
     },
     shim: {
         bootstrap: {
             deps: ['jquery'],
             exports: 'jquery'
         },
-        sheetengine: {
-            exports: 'sheetengine'
+        three: {
+            exports: 'three'
         }
     }
 });

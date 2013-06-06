@@ -1,19 +1,95 @@
 //@import url(http://fonts.googleapis.com/css?family=Balthazar);
-@import "compass/css3/text-shadow";
+@import "sass-bootstrap/lib/bootstrap";
+@import "sass-bootstrap/lib/responsive";
+
+@import url(http://fonts.googleapis.com/css?family=Balthazar);
 
 body {
-    background: #100515;
-    font-family: 'Balthazar', serif;
-    color: white;
-
+  background-color: #100515;
+  font-family: 'Balthazar', serif;
+  color: #FAFAFA;
+  margin-left: 20px;
 }
 
-header {
-  font-size: 4em;
-  @include text-shadow(0, 0, 4px, 3px, white);
+p {
+  font-size: 16px;
 }
 
-main {
-  height: 100%;
+#space-graph {
+  width:100%; 
+  height:500px; 
+  background-color:#0A030D;
+  border: 1px solid #333;
+  border-radius: 5px;
+}
 
+#sidebar {}
+
+
+.container-fluid {
+  padding-left: 0px;
+}
+
+
+.modalDialog {
+  height: 280px;
+  position: fixed;
+  top: 30%;
+  right: 0;
+  bottom: 0;
+  left: 20%;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #FAFAFA;
+  color:black;
+  z-index: 99999;
+  opacity:0;
+  -webkit-transition: opacity 400ms ease-in;
+  -moz-transition: opacity 400ms ease-in;
+  transition: opacity 400ms ease-in;
+  pointer-events: none;
+}
+
+.modalDialog:target {
+  opacity:1;
+  pointer-events: auto;
+}
+
+.modalDialog .master-modal {
+  position: relative;
+  margin-top: 30px;
+  padding: 5px 20px 13px 20px;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.close {
+  background: #606061;
+  color: #FFFFFF;
+  line-height: 25px;
+  position: absolute;
+  right: 5px;
+  text-align: center;
+  top: 5px;
+  width: 24px;
+  text-decoration: none;
+  font-weight: bold;
+  -webkit-border-radius: 12px;
+  -moz-border-radius: 12px;
+  border-radius: 12px;
+  -moz-box-shadow: 1px 1px 3px #000;
+  -webkit-box-shadow: 1px 1px 3px #000;
+  box-shadow: 1px 1px 3px #000;
+}
+
+.close:hover { background: #2E2E2E; }
+
+.divider {
+  color: #0079ae;
+  border-bottom: 1px solid;
+  margin-bottom: 15px;
+}
+
+.ebook-name {
+  padding-left: 10px;
 }

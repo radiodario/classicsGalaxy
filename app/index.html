@@ -6,7 +6,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title></title>
+        <title>MagHack</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
         <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
@@ -17,13 +17,57 @@
     </head>
     <body>
         <header>
-            Book Galaxy
+            <h1>The 'MagHack' Text Galaxy</h1>
+            <div class="divider"></div>
         </header>
-        <main>
-            <canvas id="galaxy" width="900" height="500">
-            </canvas>
+        <main class="container-fluid">
+            <div class="row-fluid">
+        <div class="span12">
+            <div class="row-fluid">
+                <div class="span9">
+                    <!--Space graph -->
+                    <div id="space-graph" class="span9">
+                    </div>
+                </div>
+                <!-- Sidebar -->
+                <div id="sidebar" class="span3">
+                    <h2>Find a Book</h2>
+                    <div class="divider"></div>
+                    <p>Magic Text allows you to search for books based on your reading style.</p>
+                    <p>Click on the link below to search for books scientifically matched to you.</p>
+                    <a href="#openModal"><button class="btn btn-success" type="button">Find a Book</button></a>
+                    
+                    <!--pop out box -->
+                    <div id="openModal" class="modalDialog master-modal span6">
+                        <a href="#close" title="Close" class="close">X</a>
+                        <h2>Find a Book</h2>
+                        <p>Type some text to get book recommendations based on your reading style.</p>
+                        <textarea rows="4" class="input-xxlarge"></textarea>
+                        <button class="btn btn-success" type="button">Search</button>
+                    </div>
+                    
+                    <div id="book-recommendations">
+                        <h2>Top 10 Similar eBooks</h2>
+                        <div class="divider"></div>
+                        <p>Top 10 eBooks based on your strongest matching book.</p>
+                        <div class="row-fluid ebook">
+                            <div class="span3 ebook-img">
+                                <img src="images/frankenstein.jpg" alt="Frankenstein">
+                            </div>
+                            <div class="span7 ebook-name">
+                                <p><a href="http://www.penguin.co.uk/nf/Book/BookDisplay/0,,9780141967127,00.html?strSrchSql=frankenstein/Frankenstein_Mary_Shelley">Frankenstein</a></p>
+                            </div>
+                            <div class="span2 ebook-buy">
+                                <button class="btn btn-success" type="button">Buy</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         </main>
         <footer>
+            <small>Hackathon Application created by Team MagHack, June 2013</small>
         </footer>
         <!--[if lt IE 7]>
             <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
