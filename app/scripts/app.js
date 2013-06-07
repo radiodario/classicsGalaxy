@@ -4,6 +4,10 @@ define(['three', 'tween'], function (three) {
 
     
     var container = document.getElementById('space-graph');
+
+    window.navigator.standalone = true;
+
+    $(container).height(window.innerHeight - $('header').height() - $('footer').height() - 50)
     var rect = container.getBoundingClientRect();
     var w = rect.width;
     var h = rect.height;
@@ -21,7 +25,7 @@ define(['three', 'tween'], function (three) {
         renderer.setSize(w, h);
 
     var camera = new THREE.PerspectiveCamera( 75, w / h, 1, 10000 );
-        camera.position.z = 100;
+        camera.position.z = w/3;
 
     container.appendChild( renderer.domElement );
 
@@ -37,19 +41,21 @@ define(['three', 'tween'], function (three) {
       z : 0,
       id :'dkDEdg1exwK1yg'
     };
-
+    var selectedStar = null;
 
     var host = 'http://ec2-54-216-139-182.eu-west-1.compute.amazonaws.com/';
 
     var stars = [];
     var lines = [];
     var tweens = [];
+    var starsHash = {};
 
     function makeStar(starInfo) {
 
 
       var op = (Math.exp(starInfo.radious))
       var r = starInfo.r
+
       var geometry = new THREE.CubeGeometry(r -op, r -op, r -op );
 
       var object = new THREE.Mesh(
@@ -83,7 +89,7 @@ define(['three', 'tween'], function (three) {
         z: starInfo.z
       }
 
-
+      starsHash[starInfo.id] = object;
       stars.push( object );
 
       var geometry = new THREE.Geometry();
@@ -121,8 +127,9 @@ define(['three', 'tween'], function (three) {
 
     function getRelated(id) {
       $.getJSON(host+'id/'+id, function(data) {
-            $('#sidebar h2.title').text(data.title);
+            $('#sidebar .title').text(data.title);
             $('#sidebar .author').text(data.author);
+            $('.pic img').attr('src', host+ 'covers/' + data.isbn)
           });
 
           $.getJSON(host+'top/'+id, function(books) {
@@ -131,7 +138,7 @@ define(['three', 'tween'], function (three) {
 
             books.forEach(function(book, i) {
 
-              html += '<li>';
+              html += '<li class="book" id="' + book[0] + '" >';
               html += '<div class="bookTitle">' + (i+1) + ': ' + book[1] + '</div>';
               html += '<div class="bookAuthor">' + book[2] + '</div>';
               html += '</li>';
@@ -141,9 +148,86 @@ define(['three', 'tween'], function (three) {
             html +='</ul>'
 
             $('#topten').html(html);
+            $('li.book')
+            .on('mouseover', function(event) {
+              var id = $(this).attr('id');
+              selectedStar = starsHash[id];
+              hoverStar();
+            })
+            .on('click', function(event) {
+              var id = $(this).attr('id');
+              console.log(id, starsHash[id]);
+              selectedStar = starsHash[id];
+              selectStar();
 
+            })
           });
 
+    }
+
+    function hoverStar() {
+      if (!selectedStar.selected && !selectedStar.tweening) {
+        var scale = {
+              x: 1
+            }
+        selectedStar.tweening = true;
+        var tween = new TWEEN.Tween(scale)
+          .to({x:1.5}, 500)
+          .onUpdate(function() {
+            selectedStar.scale.x = scale.x;
+            selectedStar.scale.y = scale.x;
+            selectedStar.scale.z = scale.x;
+          })
+          .onComplete(function() {
+            selectedStar.tweening = false;
+            selectedStar.selected = true;
+          })
+          .easing(TWEEN.Easing.Quartic.Out)
+          .start()
+
+        stars.map(function(star, i) {
+          star.material.color.setHex( 0xffffff);
+        })
+        selectedStar.material.color.setHex(0x000fff)
+        console.log(selectedStar.info)
+        $('#selectedTitle').html(selectedStar.info.title)
+        
+      }
+    }
+
+    function selectStar() {
+      stars.map(function(star, i) {
+        if (star === selectedStar) {
+          var pos = {
+            x: star.position.x,
+            y: star.position.y,
+            z: star.position.z
+          }
+          selectedStar.tweeningtohome = true;
+          var tween = new TWEEN.Tween(pos)
+            .to({x:0, y:0, z:0}, 500)
+            .onUpdate(function() {
+              star.position.x = pos.x;
+              star.position.y = pos.y;
+              star.position.z = pos.z;
+            })
+            .easing(TWEEN.Easing.Quartic.Out)
+            .onComplete(function() {
+              star.tweeningtohome = false;
+              getBooks(selectedBook.id);
+            }).start()
+          
+        } else {
+          scene.remove(star)
+          delete stars[i]
+        }
+      });
+      lines.map(function(line) {
+        scene.remove(line)
+        });
+      selectedBook = selectedStar.info;
+      selectedBook.position = selectedStar.position;
+      getRelated(selectedBook.id);
     }
 
     function getBooks(id) {
@@ -151,12 +235,13 @@ define(['three', 'tween'], function (three) {
       // $.getJSON('data/books.json', function(data) {
       $.getJSON(host + 'geo/' + id, function(data) {
 
+
         for (var key in data) {
           var starInfo = data[key];
           starInfo.r = mapToCoordinates(starInfo.radious, 0, 1, 0, 20);
           starInfo.x = mapToCoordinates(starInfo.x, -1, 1, -side, side);
           starInfo.y = mapToCoordinates(starInfo.y, -1, 1, -side, side);
-          starInfo.z = getRandomArbitrary(-side, side);
+          starInfo.z = getRandomArbitrary(-10, 10);
           starInfo.id = key;
           makeStar(starInfo)
         }
@@ -183,7 +268,7 @@ define(['three', 'tween'], function (three) {
     }
 
     function onWindowResize() {
-
+        $(container).height(window.innerHeight - ($('header').height() + $('footer').height()) - 50)
         rect = container.getBoundingClientRect();
         w = rect.width;
         h = rect.height;
@@ -207,13 +292,33 @@ define(['three', 'tween'], function (three) {
         var intersects = raycaster.intersectObjects( stars );
         // console.log(intersects)
         if ( intersects.length > 0 ) {
-          var selectedStar = intersects[0].object;
+          selectedStar = intersects[0].object;
+          hoverStar();
+        } else {
+          $('#selectedTitle').html();
+          if (selectedStar && (!selectedStar.tweening)) {
 
-          stars.map(function(star, i) {
-            star.material.color.setHex( 0xffffff);
-          })
-          selectedStar.selected = true;
-          selectedStar.material.color.setHex( 0x000fff)
+            selectedStar.tweening = true;
+
+            var scale = {
+                  x: selectedStar.scale.x
+                }
+
+            var tween = new TWEEN.Tween(scale)
+              .to({x:1}, 500)
+              .onUpdate(function() {
+                selectedStar.scale.x = scale.x;
+                selectedStar.scale.y = scale.x;
+                selectedStar.scale.z = scale.x;
+              })
+              .onComplete(function() {
+                selectedStar.tweening = false;
+                selectedStar.selected = false;
+                selectedStar.material.color.setHex( 0xffffff);
+              })
+              .easing(TWEEN.Easing.Quartic.Out)
+              .start()
+          }
         }
 
     }
@@ -222,7 +327,7 @@ define(['three', 'tween'], function (three) {
     function onDocumentMouseDown( event ) {
 
         event.preventDefault();
-        
+
         var vector = new THREE.Vector3( ( event.offsetX / rect.width ) * 2 - 1, - ( event.offsetY / rect.height ) * 2 + 1, 0.5 );
         projector.unprojectVector( vector, camera );
 
@@ -231,38 +336,8 @@ define(['three', 'tween'], function (three) {
         var intersects = raycaster.intersectObjects( stars );
 
         if ( intersects.length > 0 ) {
-          var selectedStar = intersects[0].object;         
-          stars.map(function(star, i) {
-            if (star === selectedStar) {
-              var pos = {
-                x: star.position.x,
-                y: star.position.y,
-                z: star.position.z
-              }
-
-              var tween = new TWEEN.Tween(pos)
-                .to({x:0, y:0, z:0}, 500)
-                .onUpdate(function() {
-                  star.position.x = pos.x;
-                  star.position.y = pos.y;
-                  star.position.z = pos.z;
-                })
-                .easing(TWEEN.Easing.Quartic.Out)
-                .onComplete(function() {
-                getBooks(selectedBook.id);
-                }).start()
-              
-            } else {
-              scene.remove(star)
-              delete stars[i]
-            }
-          });
-          lines.map(function(line) {
-            scene.remove(line)
-            });
-          selectedBook = selectedStar.info;
-          selectedBook.position = selectedStar.position;
-          getRelated(selectedBook.id);
+          //selectedStar = intersects[0].object;         
+          selectStar();
         }
         
 
@@ -289,24 +364,20 @@ define(['three', 'tween'], function (three) {
     
     function render() {
 
-        theta += 0.01;
+        theta += 0.005;
 
-        camera.position.x = radius * Math.sin( THREE.Math.degToRad( theta ) );
+        //camera.position.y = radius * Math.sin( THREE.Math.degToRad( theta ) );
         // //camera.position.y = radius * Math.sin( THREE.Math.degToRad( theta ) );
-        camera.position.z = radius * Math.cos( THREE.Math.degToRad( theta ) );
+        //camera.position.z = radius * Math.cos( THREE.Math.degToRad( theta ) );
 
+        camera.lookAt( scene.position )
+        //camera.rotation.x = theta / Math.PI
+        //camera.rotation.y = theta / Math.PI
+        camera.rotation.z = theta / Math.PI
 
-
-        // if (selectedBook.hasOwnProperty('position')){
-        //   // camera.translateY(selectedBook.position.y)
-        //   //camera.translateX(selectedBook.position.x)
-
-        //   camera.lookAt( selectedBook.position );
-        //  } else {
-          camera.lookAt( scene.position )
-         // }
-
-
+        
+        
+     
 
         TWEEN.update();
 

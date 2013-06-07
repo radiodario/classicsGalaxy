@@ -9,21 +9,61 @@ body {
   font-family: 'Balthazar', serif;
   color: #FAFAFA;
   margin-left: 20px;
+  background-image: url('../images/universe.jpg');
+
+  /* Smartphones (portrait and landscape) ----------- */
+  @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+  /* Styles */
+  margin-left: 0px;
+
+    h1 {
+      font-size:1.75em;
+    }
+
+  }
+
+
+  /* Smartphones (portrait) ----------- */
+  @media only screen and (max-width : 320px) {
+  /* Styles */
+  margin-left: 0px;
+  }
+
 }
 
 p {
   font-size: 16px;
 }
 
+
 #space-graph {
   width:100%; 
   height:550px; 
-  background-color:#0A030D;
+  background-color:rgba(16, 5, 21, 0.90);
   border: 1px solid #333;
   border-radius: 5px;
+  margin-left: 0px;
 }
 
-#sidebar {}
+#selectedTitle {
+  position: absolute;
+  margin-left: 5px;
+  margin-top: 5px;
+}
+
+#sidebar {
+  background-color: rgba(16, 5, 21, 0.85);
+  padding-left: 10px;
+  //margin-left: 5px;
+}
+
+.pic {
+  margin-right: 5px;
+  img {
+    height: 75px;
+    width: 47px;
+  }
+}
 
 
 .container-fluid {
@@ -43,6 +83,13 @@ p {
   .bookAuthor {
     font-size: 0.75em;
   }
+
+  li:hover {
+    background-color: rgba(26, 15, 41, 1);
+    cursor: hand;
+    cursor: pointer;
+  }
+
 }
 
 .modalDialog {

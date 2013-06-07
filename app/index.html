@@ -6,8 +6,9 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>MagHack</title>
+        <title>Penguin Classics Galaxy</title>
         <meta name="description" content="">
+        <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="viewport" content="width=device-width">
         <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
         <link rel="stylesheet" href="styles/main.css">
@@ -26,21 +27,29 @@
             <div class="row-fluid">
                 <div class="span9">
                     <!--Space graph -->
+                    <div id="selectedTitle"></div>
                     <div id="space-graph" class="span9">
                     </div>
                 </div>
                 <!-- Sidebar -->
                 <div id="sidebar" class="span3">
-                    <h2 class="title">Find a Book</h2>
-                    <p class="author">Magic Text allows you to search for books based on your reading style.</p>
-                    <div class="divider"></div>
+                    <div class="selectedBook">
+                        <div class="pic pull-left">
+                            <img class="img-polaroid" src="http://placehold.it/49x75">
+                        </div>
+                        <div class="info pull-left">
+                            <h3 class="title">Find a Book</h3>
+                            <p class="author">Magic Text allows you to search for books based on your reading style.</p>
+                        </div>
+                    <div class="divider" style="clear:both"></div>
+                    </div>
                     <!-- <p>Click on the link below to search for books scientifically matched to you.</p>
                     <a href="#openModal"><button class="btn btn-success" type="button">Find a Book</button></a> -->
                     
                     <div id="book-recommendations">
-                        <h3>Top 10 Similar classics</h3>
-                        <div class="divider"></div>
+                        <h4>Top 10 Similar classics</h4>
                         <div id="topten"></div>
+                        
                     </div>
                 </div>
             </div>
